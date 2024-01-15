@@ -1,0 +1,490 @@
+public interface ResourceLoader{
+
+  Resource getResource(String name);
+  ClassLoader getClasLoader();
+}
+
+//
+Resource template = ctx.getResource("some/resource/path/myTemplate.txt");
+
+//
+Resource template = ctx.getResource("file::///some/resource/path/myTemplate.txt");
+
+Resource template = 
+  ctx.getResource("https://myhost.com/resource/path/myTemplate.txt");
+//
+classpath / classpath:com/myapp/config.xml
+  file: / file:///data/config.xml
+https: / htpps://myserver/logo.png
+(none) / /data/config.xml
+  //
+  public interface ResourcePatternResolver extends ResourceLoader{
+    String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
+  Resource[] getResources(String locationPattern)throws IOException;
+  }
+//
+public interface ResourceLoaderAware{
+  void setResourceLoader(ResourceLoader resourceLoader);
+}
+
+//
+package example;
+
+
+public class MyBean{
+  private Resource template;
+
+  public setTemplate(Resource template){
+    this.template = template;
+}
+}
+//
+@Component
+  public class MyBean{
+    private final Resource template;
+
+    public MyBean(@Value("${template.path}")Resource template){
+      this.template  = template;
+    }
+  }
+//
+
+ApplicationContext ctx = new ClassPathXmlApplicationContext("config.xml");
+//
+ApplicationContext ctx = 
+  new FileSystemXmlApplicationContext("conf/appContext.xml")
+  //
+
+  ApplicationContext ctx =
+  new ClassPathXmlApplicationContext("classpath:conf/appContext.xml");
+
+//
+com/
+  example
+  services.xml
+  repositor.xml
+  MessagerService.class
+  //
+  ApplicationContext ctx = new ClassPathXmlApplicationContext(
+  new String[]{"services.xml", "repository.xml"} , MessagerService.class);
+
+//
+/WEB-INF/*context.xml
+  com/mycompany/**/applicationContext.xml
+  file:C:/some/path/*-context.xml
+  classpath:com/mycompany/**/applicationContext.xml
+
+  //
+  ApplicationContext ctx = 
+  new ClassPathXmlApplicationContext("classpath*:conf/appContext.xml");
+
+//
+ApplicationContext ctx =
+  new FileSystemXmlApplicationContext("conf/context.xml");
+
+//
+ApplicationContext ctx =
+  new FileSystemXmlApplicationContext("/conf/context.xml");
+
+//
+FileSystemXmlApplicationContext ctx = ...;
+ctx.getResource("some/resource/path/myTemplate.txt");
+//
+FileSystemXmlApplicationContext ctx = ...;
+ctx.getResource("/some/resource/path/myTemplate.txt");
+//
+ctx.getResource("file:///some/resource/path/myTemplate.txt");
+//
+ApplicationContext ctx = 
+  new FileSystemXmlApplicationContext("file:///conf/context.xml");
+
+//
+public class Person{
+  private String name;
+  private int age;
+
+
+}
+
+//
+public class PersonValidator implements Validator{
+
+
+  public boolean supports(Class clazz){
+    return Person.class.equals(clazz);
+  }
+
+  public void validate(Object obj, Errors e){
+    ValidationUtils.rejectIfEmpty(e, "name", "name.required");
+    Person p = (Person) obj;
+    if(p.getAge() < 0){
+          e.rejectValue("age", "negativevalue");
+  }else if (p.getAge() > 110){
+      e.rejectValue("age", "age", "too.darn.old");
+    }
+  }
+}
+//
+public class CustomerValidatior implements Validator{
+
+  private final Validator addressValidator;
+
+  public CustomerValidator(Validator addressValidator){
+    if(addressValidator == null){
+      throw new IllagalArgumentException("The supplied [Validator] is" +
+                                        "required and must not be null");
+    }
+    if(!addressValidator.supports(Address.class)){
+      throw new IllegalArgumentException("The supplied [Validator] must" +
+                                         "support the validation of [Address] instances");
+    }
+    this.addressValidator = addressValidator;
+  }
+
+  public boolean supports(Class clazz){
+    return Customer.class.isAssignableFrom(clazz);
+  }
+  public void validate(Object target, Errors errors){
+    ValidationUtil.rejectIfEmptyOrWhitespace(errors, "firstName",
+                                            "field.required");
+    ValidationUtil.rejectIfEmptyOrWhitespace(errors, "surname",
+  "field.required");
+    Customer customer = (Customer) target;
+    try{
+      errors.pushNestedPath("address");
+      ValidatiorUtil.invokeValidator(this.addressValidator,
+                                     customer.getAddress()errors);
+    }finally{
+      errors.popNestedPath();
+    }
+  }
+  
+    }
+                                             
+
+
+.///
+public class Company{
+
+  private String name;
+  private Employee managingDirector;
+
+  public String getName(){
+    return this.name;
+  }
+
+  public void setName(String name){
+    this.name = name;
+    
+}
+  public Employee getManagingDirector(){
+    return this.managingDirector;
+  }
+  public void setManagingDirector(Employee managingDirector){
+    this.managingDirector = managingDirector;
+  }
+}
+//
+public class Employee{
+  private String name;
+  private float salary;
+
+  public String getName(){
+    return this.name;
+    
+}
+  public void setName(String name){
+    this.name = name;
+  }
+
+  public float getSalary(){}
+  return salary;
+}
+
+  public void setSalary(float salary){
+    this.salary = salary;
+  }
+}
+//
+BeanWrapper company = new BeanWrapperImpl(new Company());
+
+company.setPropertyValue("name", "Some Company Inc.");
+
+PropertyValue value = new PropertyValue("name", "Some Company Inc.");
+
+company.setPropertyValue(value);
+
+BeanWrapper jim = new BeanWrapperImpl(new Employee());
+
+jim.setPropertyValue("name", "Jim Stravinsky");
+company.setPropertyValue("managingDirector", jim.getWrappedInstance());
+
+Float salary = (Float) company.getPropertyValue("managingDirector.salary");
+
+//
+claass 
+  ByteArrayPropertyEditor
+  ClassEditor
+  CustomBooleanEditor
+  CustomCollectionEditor
+  CustomDateEditor
+  CustomNumberEditor
+  FileEditor
+  InputStreamEditor
+  LocateEditor
+  PatternEditor
+  PropertiesEditor
+  StringTrimmerEditor
+  URLEditor
+  //
+  com
+  chank
+  pop
+  Something
+  SomethingEditor
+
+  //
+  public class SomethingBeanInfo extends SimpleBeanInfo{
+
+  public PropertyDescriptor[] getPropertyDescriptors(){
+    try{
+      final PropertyEditor numberPE = new CustomeNumberEditor(Integer.class,
+                                                             true);
+
+      PropertyDescriptor ageDescriptor = new PropertyDescriptor("age",
+                                                                Something.class)
+        {
+          @Override
+          public PropertyEditor createPropertyEditor(Object bean){
+            return numberPE;
+        }
+    };
+      return new PropertyDescriptor[]{ageDescriptor};
+  }
+    catch(IntrospectionException e){
+      throw new Error(ex.toString());
+    }
+  }
+
+}
+//
+package example;
+
+public class ExoticType{
+  private String name;
+
+  public String name;
+
+  public ExoticType(String name){
+    this.name = name;
+    
+}
+}
+
+public class DependsOnExoticType{
+  private ExoticType type;
+
+  public void setType(ExoticType type){
+    this.type = type;
+  }
+}
+//
+
+package example
+
+import java.beans.PropertyEditorSupport;
+
+public class ExoticTypeEditor extends PropertyEditorSupport{
+  public void setAsText(String text){
+    setValue(new ExoticType(text.toUpperCase()));
+}
+}
+
+//
+public final class CustomPropertyEditorRegistrar implements PropertyEditorRegistrar{
+  public void registerCustomEditors(PropertyEditorRegistry registry){
+
+    registry.registerCustomEditor(ExoticType.class, new ExoticTypeEditor());
+
+  }
+}
+//
+@Controller
+  public class RegisterUserController{
+    private final PropertyEditorRegistrar customPropertyEditorRegistrar;
+
+    RegisterUserController(PropertyEditorRegistrar propertyEditorRegistrar){
+  
+    
+    this.customPropertyEditorRegistrar = propertyEditorRegistrar;
+      
+      }
+
+    @InitBinder
+
+    void initBinder(WebDataBinder binder){
+      this.customPropertyEditorRegistrar.registerCustomEditors(binder);
+    }
+  }
+
+//
+package org.springframework.core.convert.converter;
+
+
+public interface Converter<S, T>{
+  T convert(S source);
+}
+//
+
+package org.springframework.core.convert.converter;
+
+fianl class StringToInteger implements Converter<String, Integer>{
+
+  public Integer convert(String source){
+    return Integer.valueOf(source);
+}
+}
+//
+package org.springframework.core.convert.converter;
+
+public interface ConvertFactory<S, R>{
+  <T extends R> Converter<S, T> getConverter(Class<T> targetType);
+  
+}
+//
+
+package org.springframework.core.convert.converter;
+final class StringToEnumConverterFactory implements ConvertFactory<String, Enum>{
+
+  public <T extends Enum> Converter<String, T> getConverter(Class<T extends Enum>implements Converter<String T>{
+
+    private Class<T> enumType;
+
+    public StringToEnumConverter(Class<T> enumType){
+      this.enumType = enumType;
+    }
+    public T convert(String source){
+
+      return (T) Enum.valueOf(this.enumType, source.trim());
+  }
+}
+}
+//
+
+package org.springframework.core.convert.converter;
+
+public interface GenericConverter{
+  public Set<ConvertiblePair> getConvertibleTypes();
+
+  Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType
+                 );
+}
+//
+
+public interface ConditionalConverter{
+
+  boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType);
+}
+
+public interface ConditionalGenericConvert extends GenericConverter,
+ ConditionalConverter {
+  
+}
+//
+package org.springframework.core.convert;
+
+public interface ConversionService{
+
+
+  boolean canConvert(Class<?> sourceType, Class<?> targetType);
+
+  <T> T convert(Object source, Class<T> targetType);
+
+  boolean canConvert(TypeDescriptor sourceType, TypeDescriptor targetType);
+
+  Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType);
+}
+//
+@Service
+  public class MyService{
+
+    public MyService(ConversionService conversionService){
+      this.conversionService = conversionService;
+    }
+
+    public void doIt(){
+    this.conversionService.convert(..)
+      }
+  }
+
+//
+DefaultConversionService cs = new DefaultConverstionService();
+
+List<Integer> input = ...
+  cs.convert (input,
+             TypeDescriptor.forObject(input),
+              TypeDescritpor.valueOf(Integer.class, TypeDescriptor.value(String.class)));
+
+
+              //
+package org.springframework.format;
+
+public interface Formatter<T> extends Printer<T>, Parser<T>{
+  
+}
+
+public interface Printer<T>{
+  String print(T fieldValue, Locale locale);
+}
+
+
+public interface Parser<T>{
+  T parse(String clientValue, Locale locale )throws ParseException;
+}
+//
+public final class DateFormatter implements Formatter<Date>{
+
+  private String pattern;
+
+  public DateFormatter(String pattern){
+    this.pattern = pattern;
+  }
+
+  public String print(Date date, Locale locale){
+    if(date == null){
+return "";
+    }
+    return getDateFormat(locale).format(date);
+  }
+
+  public Date parse(String formatted, Locale locale) throws ParseException{
+    if(formatted.length()== 0)
+    {
+
+      return null;
+      
+    }
+
+    return getDateFormat(locale).parse(formatted);
+  }
+  protected DateFormat getDateFormat(Locale locale){
+
+    DateFormat dateFormat = new SimpleDateFormat(this.pattern, locale);
+    dateFormat.setLenient(false);
+    return dateFormat;
+  }
+
+}
+
+
+public interface AnnotationFormatterFactory<A extends>{
+
+  Set<Class<?>> getFieldTypes();
+
+  Printer<?> getPrinter(A annotation, Class<?> fieldType);
+
+  Parser<?> getParser(A annotation, Class<?> fieldType);
+}
+
+//
+//262P
